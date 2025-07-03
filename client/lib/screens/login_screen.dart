@@ -1,7 +1,9 @@
-// login_screen.dart 파일 내용 전체가 이와 같아야 합니다.
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+
+import 'user_screen.dart';
+import 'master_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -36,26 +38,41 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (response.statusCode == 200) {
         print('[_login] 로그인 성공 조건 충족');
-        // 로그인 성공 시 AlertDialog 표시
-        showDialog(
-          context: context,
-          builder: (BuildContext dialogContext) {
-            return AlertDialog(
-              title: const Text('로그인 성공'),
-              content: const Text('성공적으로 로그인되었습니다.'),
-              actions: <Widget>[
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(dialogContext).pop(); // AlertDialog 닫기
-                    // TODO: 로그인 성공 후 다음 화면으로 이동하는 로직 추가 (예시)
-                    // Navigator.pushReplacement(context, MaterialPageRoute(builder: (c) => HomeScreen()));
-                  },
-                  child: const Text('확인'),
-                ),
-              ],
-            );
-          },
-        );
+
+        final Map<String, dynamic> data = jsonDecode(response.body);
+        final String? role = data['role'];
+        print('[_login] 받은 role: $role');
+
+        if (role == 'user') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (c) => UserScreen(role: 'User')),
+          );
+        } else if (role == 'master') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (c) => MasterScreen(role: 'Master')),
+          );
+        } else {
+          // 알 수 없는 role
+          showDialog(
+            context: context,
+            builder: (BuildContext dialogContext) {
+              return AlertDialog(
+                title: const Text('알 수 없는 사용자'),
+                content: const Text('로그인은 성공했지만 역할(role)을 알 수 없습니다.'),
+                actions: <Widget>[
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(dialogContext).pop();
+                    },
+                    child: const Text('확인'),
+                  ),
+                ],
+              );
+            },
+          );
+        }
       } else {
         print('[_login] 로그인 실패 조건 충족, 상태 코드: ${response.statusCode}');
         // 로그인 실패 시 AlertDialog 표시
@@ -103,7 +120,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('login')),
+      appBar: AppBar(title: const Text('Login')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
