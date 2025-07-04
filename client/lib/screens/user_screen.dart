@@ -153,7 +153,7 @@ class _UserScreenState extends State<UserScreen> with TickerProviderStateMixin {
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: OutlinedButton(
         style: OutlinedButton.styleFrom(
-          backgroundColor: isSelected ? Colors.white : color.withOpacity(0.2),
+          backgroundColor: isSelected ? Colors.blueGrey : color.withOpacity(0.2),
           foregroundColor: Colors.black,
         ),
         onPressed: () {

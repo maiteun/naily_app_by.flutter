@@ -1,118 +1,55 @@
-import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-import 'user_screen.dart';
-import 'master_screen.dart';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import '../screens/master_screen.dart';
+import '../screens/user_screen.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  const LoginScreen({Key? key}) : super(key: key);
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final _usernameController = TextEditingController();
-  final _passwordController = TextEditingController();
+  final TextEditingController idController = TextEditingController();
+  final TextEditingController pwController = TextEditingController();
 
-  Future<void> _login() async {
-    print('[_login] 함수 시작');
-    final url = Uri.parse('http://localhost:8080/login');
-    print('[_login] 요청 URL: $url');
-    print('[_login] 입력된 ID: ${_usernameController.text}, 입력된 PW: ${_passwordController.text}');
-
+  Future<void> login() async {
     try {
       final response = await http.post(
-        url,
+        Uri.parse('http://127.0.0.1:8080/login'),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'username': _usernameController.text,
-          'password': _passwordController.text,
+        body: json.encode({
+          'id': idController.text.trim(),
+          'password': pwController.text.trim(),
         }),
       );
 
-      print('[_login] 서버 응답 상태 코드: ${response.statusCode}');
-      print('[_login] 서버 응답 본문: ${response.body}');
-
       if (response.statusCode == 200) {
-        print('[_login] 로그인 성공 조건 충족');
-
-        final Map<String, dynamic> data = jsonDecode(response.body);
-        final String? role = data['role'];
-        print('[_login] 받은 role: $role');
-
-        if (role == 'user') {
+        final result = json.decode(response.body);
+        if (!mounted) return;
+        if (result['role'] == 'admin') {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (c) => UserScreen(role: 'User')),
-          );
-        } else if (role == 'master') {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (c) => MasterScreen(role: 'Master')),
+            MaterialPageRoute(builder: (_) => MasterScreen(role: 'admin')),
           );
         } else {
-          // 알 수 없는 role
-          showDialog(
-            context: context,
-            builder: (BuildContext dialogContext) {
-              return AlertDialog(
-                title: const Text('알 수 없는 사용자'),
-                content: const Text('로그인은 성공했지만 역할(role)을 알 수 없습니다.'),
-                actions: <Widget>[
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(dialogContext).pop();
-                    },
-                    child: const Text('확인'),
-                  ),
-                ],
-              );
-            },
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => UserScreen(role: 'user')),
           );
         }
       } else {
-        print('[_login] 로그인 실패 조건 충족, 상태 코드: ${response.statusCode}');
-        // 로그인 실패 시 AlertDialog 표시
-        showDialog(
-          context: context,
-          builder: (BuildContext dialogContext) {
-            return AlertDialog(
-              title: const Text('로그인 실패'),
-              content: Text('로그인에 실패했습니다. (상태 코드: ${response.statusCode}, 본문: ${response.body})'),
-              actions: <Widget>[
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(dialogContext).pop();
-                  },
-                  child: const Text('확인'),
-                ),
-              ],
-            );
-          },
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('로그인 실패: 아이디 또는 비밀번호를 확인하세요')),
         );
       }
     } catch (e) {
-      print('[_login] 네트워크 요청 중 예외 발생: $e');
-      // 네트워크 오류 시 AlertDialog 표시
-      showDialog(
-        context: context,
-        builder: (BuildContext dialogContext) {
-          return AlertDialog(
-            title: const Text('오류 발생'),
-            content: Text('네트워크 오류가 발생했습니다: $e'),
-            actions: <Widget>[
-              TextButton(
-                onPressed: () {
-                  Navigator.of(dialogContext).pop();
-                },
-                child: const Text('확인'),
-              ),
-            ],
-          );
-        },
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('오류 발생: $e')),
       );
     }
   }
@@ -120,37 +57,28 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Login')),
+      appBar: AppBar(title: const Text('로그인')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              TextFormField(
-                controller: _usernameController,
-                decoration: const InputDecoration(
-                  labelText: 'ID',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _passwordController,
-                decoration: const InputDecoration(
-                  labelText: 'Password',
-                  border: OutlineInputBorder(),
-                ),
-                obscureText: true,
-              ),
-              const SizedBox(height: 24),
-              FilledButton(
-                onPressed: _login,
-                child: const Text('LOGIN'),
-              ),
-            ],
-          ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            TextField(
+              controller: idController,
+              decoration: const InputDecoration(labelText: '아이디'),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: pwController,
+              obscureText: true,
+              decoration: const InputDecoration(labelText: '비밀번호'),
+            ),
+            const SizedBox(height: 32),
+            ElevatedButton(
+              onPressed: login,
+              child: const Text('로그인'),
+            ),
+          ],
         ),
       ),
     );

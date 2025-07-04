@@ -53,6 +53,22 @@ def init_db():
                     c.execute("INSERT INTO available_times (shop_id, time, service) VALUES (?, ?, ?)", (shop_id, t, s))
 
         conn.commit()
+@app.route('/login', methods=['POST'])
+def login():
+    data = request.json
+    user_id = data.get('id')
+    password = data.get('password')
+
+    with sqlite3.connect(DB_FILE) as conn:
+        c = conn.cursor()
+        c.execute('SELECT role FROM users WHERE username=? AND password=?', (user_id, password))
+
+        result = c.fetchone()
+
+    if result:
+        return jsonify({'status': 'success', 'role': result[0]})
+    else:
+        return jsonify({'status': 'fail', 'message': 'Invalid credentials'}), 401
 
 @app.route('/shops', methods=['GET'])
 def get_shops():
@@ -92,4 +108,4 @@ def get_reservations():
 
 if __name__ == '__main__':
     init_db()
-    app.run(port=5001, debug=True)
+    app.run(port=8080, debug=True)
