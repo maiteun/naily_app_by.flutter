@@ -57,7 +57,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('로그인')),
+      appBar: AppBar(title: const Text('login')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -65,18 +65,18 @@ class _LoginScreenState extends State<LoginScreen> {
           children: [
             TextField(
               controller: idController,
-              decoration: const InputDecoration(labelText: '아이디'),
+              decoration: const InputDecoration(labelText: 'ID'),
             ),
             const SizedBox(height: 16),
             TextField(
               controller: pwController,
               obscureText: true,
-              decoration: const InputDecoration(labelText: '비밀번호'),
+              decoration: const InputDecoration(labelText: 'PASSWORD'),
             ),
             const SizedBox(height: 32),
             ElevatedButton(
               onPressed: login,
-              child: const Text('로그인'),
+              child: const Text('LOGIN'),
             ),
           ],
         ),

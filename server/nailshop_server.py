@@ -4,7 +4,7 @@ import sqlite3
 app = Flask(__name__)
 DB_FILE = 'nailshop.db'
 
-# DB 초기화
+# DB 테이블만 초기화
 def init_db():
     with sqlite3.connect(DB_FILE) as conn:
         c = conn.cursor()
@@ -34,25 +34,8 @@ def init_db():
                 service TEXT
             )
         ''')
-
-        # 샘플 데이터가 없으면 삽입
-        c.execute('SELECT COUNT(*) FROM shops')
-        if c.fetchone()[0] == 0:
-            c.execute("INSERT INTO shops (name, lat, lng) VALUES (?, ?, ?)", ('네일샵 라뷰', 37.307670, 127.126336))
-            c.execute("INSERT INTO shops (name, lat, lng) VALUES (?, ?, ?)", ('네일샵 블룸', 37.308000, 127.127000))
-            c.execute("INSERT INTO shops (name, lat, lng) VALUES (?, ?, ?)", ('네일샵 데이지', 37.307200, 127.125800))
-
-            for shop_id in range(1, 4):
-                for t, s in [
-                    ('13:00', 'Only Clinic'),
-                    ('14:00', 'Art Design'),
-                    ('15:00', 'Gel Polish'),
-                    ('16:00', 'Care & Polish'),
-                    ('17:00', 'Special Spa')
-                ]:
-                    c.execute("INSERT INTO available_times (shop_id, time, service) VALUES (?, ?, ?)", (shop_id, t, s))
-
         conn.commit()
+
 @app.route('/login', methods=['POST'])
 def login():
     data = request.json
@@ -62,7 +45,6 @@ def login():
     with sqlite3.connect(DB_FILE) as conn:
         c = conn.cursor()
         c.execute('SELECT role FROM users WHERE username=? AND password=?', (user_id, password))
-
         result = c.fetchone()
 
     if result:
@@ -80,6 +62,7 @@ def get_shops():
             c.execute("SELECT time, service FROM available_times WHERE shop_id=?", (shop_id,))
             times = [{'time': row[0], 'service': row[1]} for row in c.fetchall()]
             shops.append({
+                'id': shop_id,
                 'name': name,
                 'location': {'lat': lat, 'lng': lng},
                 'availableTimes': times
@@ -107,5 +90,5 @@ def get_reservations():
     return jsonify(rows)
 
 if __name__ == '__main__':
-    init_db()
+    init_db()  # 테이블만 만들고 데이터는 삽입하지 않음
     app.run(port=8080, debug=True)

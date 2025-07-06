@@ -7,6 +7,5 @@ CREATE TABLE IF NOT EXISTS users (
   role TEXT NOT NULL
 );
 
-
-INSERT INTO users (username, password, role) VALUES ('user', '1234', 'user');
-INSERT INTO users (username, password, role) VALUES ('master', '1234', 'admin');
+INSERT OR IGNORE INTO users (username, password, role) VALUES ('user', '1234', 'user');
+INSERT OR IGNORE INTO users (username, password, role) VALUES ('master', '1234', 'admin');

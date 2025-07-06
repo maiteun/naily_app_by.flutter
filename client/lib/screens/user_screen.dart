@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'reservation_page.dart';
+
+
+
 
 class UserScreen extends StatefulWidget {
   final String role;
@@ -148,29 +152,38 @@ class _UserScreenState extends State<UserScreen> with TickerProviderStateMixin {
   }
 
   Widget _shopButton(int idx, String name, Color color) {
-    final isSelected = selectedShopIndex == idx;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: OutlinedButton(
-        style: OutlinedButton.styleFrom(
-          backgroundColor: isSelected ? Colors.blueGrey : color.withOpacity(0.2),
-          foregroundColor: Colors.black,
-        ),
-        onPressed: () {
-          if (isSelected) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('$name 예약 페이지로 이동합니다')),
-            );
-          } else {
-            setState(() {
-              selectedShopIndex = idx;
-            });
-          }
-        },
-        child: Text(name),
+  final isSelected = selectedShopIndex == idx;
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: 8),
+    child: OutlinedButton(
+      style: OutlinedButton.styleFrom(
+        backgroundColor: isSelected ? Colors.blueGrey : color.withOpacity(0.2),
+        foregroundColor: Colors.black,
       ),
-    );
-  }
+      onPressed: () {
+        if (isSelected) {
+          // 선택된 상태라면 예약 페이지로 이동
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ReservationPage(
+                shopId: idx + 1,
+                shopName: name,
+              ),
+            ),
+          );
+        } else {
+          // 아직 선택되지 않았다면 선택 상태로 변경
+          setState(() {
+            selectedShopIndex = idx;
+          });
+        }
+      },
+      child: Text(name),
+    ),
+  );
+}
+
 
   Widget _sampleGallery() {
     final samples = [
