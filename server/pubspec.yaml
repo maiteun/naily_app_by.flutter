@@ -7,8 +7,13 @@ environment:
   sdk: ">=3.0.0 <4.0.0"
 
 dependencies:
+  http: ^1.1.0
+  html: ^0.15.4
   dart_frog: ^1.1.0
   sqlite3: ^2.0.0
+  supabase_flutter: ^1.10.17
+  path_provider: ^2.0.14
+  url_launcher: ^6.1.5
 
 dev_dependencies:
   mocktail: ^1.0.3

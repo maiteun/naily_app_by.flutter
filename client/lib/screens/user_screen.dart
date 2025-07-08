@@ -5,6 +5,10 @@ import '../photo/photo.dart';
 import '../photo/photo_db.dart';
 import 'reservation_page.dart';
 import 'designer_page.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'liked_photo.dart';
+import 'login_screen.dart';
+import 'instagram_photos_page.dart';
 
 class UserScreen extends StatefulWidget {
   final String role;
@@ -72,6 +76,45 @@ class _UserScreenState extends State<UserScreen> with TickerProviderStateMixin {
       appBar: AppBar(
         title: const Text('Available Now'),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.favorite),
+            tooltip: '좋아요한 사진 보기',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const LikedPhotosPage(),
+                ),
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.photo),
+            tooltip: '인스타그램 사진',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const InstagramPhotosPage(handle: 'musee_nail'),
+                ),
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.logout),
+            tooltip: '로그아웃',
+            onPressed: () async {
+              await Supabase.instance.client.auth.signOut();
+              if (!mounted) return;
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (_) => const LoginScreen()),
+                (route) => false,
+              );
+            },
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -276,7 +319,7 @@ class _UserScreenState extends State<UserScreen> with TickerProviderStateMixin {
                               await insertLike(photo.id);
                             }
                           },
-                        )
+                        ),
                       ],
                     ),
                   ),
