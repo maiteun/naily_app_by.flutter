@@ -26,7 +26,7 @@ class LikedPhotosPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('좋아요한 사진들'),
+        title: const Text('LIKED'),
         centerTitle: true,
       ),
       body: FutureBuilder<Map<String, dynamic>>(

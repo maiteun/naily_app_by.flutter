@@ -16,6 +16,10 @@ class _MasterScreenState extends State<MasterScreen> {
   List<Map<String, dynamic>> likes = [];
   Map<String, int> categoryCounts = {};
 
+  final TextEditingController shopIdController = TextEditingController();
+  final TextEditingController timeController = TextEditingController();
+  final TextEditingController serviceController = TextEditingController();
+
   static const supabaseAnonKey =
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZwcnNwcWFqcWp4Y2dkc3dhd2hoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE4NDczNDYsImV4cCI6MjA2NzQyMzM0Nn0.TO5qtptiYhr_DezGXap9IKi50M7U_nrGs_YL1fNg4gk';
 
@@ -127,6 +131,66 @@ class _MasterScreenState extends State<MasterScreen> {
     }
   }
 
+  Future<void> addAvailableTime() async {
+    final shopId = int.tryParse(shopIdController.text.trim());
+    final time = timeController.text.trim();
+    final service = serviceController.text.trim();
+
+    if (shopId == null || time.isEmpty || service.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('모든 필드를 올바르게 입력해주세요.')),
+      );
+      return;
+    }
+
+    final response = await http.post(
+      Uri.parse('http://127.0.0.1:8080/available_times'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'shop_id': shopId,
+        'time': time,
+        'service': service,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('예약 가능 시간이 추가되었습니다.')),
+      );
+      shopIdController.clear();
+      timeController.clear();
+      serviceController.clear();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('추가 실패: ${response.body}')),
+      );
+    }
+  }
+
+  Future<void> cancelReservation(Map<String, dynamic> reservation) async {
+    final response = await http.delete(
+      Uri.parse('http://127.0.0.1:8080/reservations'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'user': reservation['user'],
+        'place': reservation['place'],
+        'time': reservation['time'],
+        'service': reservation['service'],
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('예약이 취소되었습니다.')),
+      );
+      fetchReservations();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('취소 실패: ${response.body}')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -142,7 +206,7 @@ class _MasterScreenState extends State<MasterScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '📅 예약 내역 (${reservations.length})',
+                      'RESERVATION LIST (${reservations.length})',
                       style: const TextStyle(
                           fontSize: 18, fontWeight: FontWeight.bold),
                     ),
@@ -157,11 +221,17 @@ class _MasterScreenState extends State<MasterScreen> {
                                 Text('서비스: ${r['service']}'),
                               ],
                             ),
+                            trailing: IconButton(
+                              icon: const Icon(Icons.cancel, color: Colors.red),
+                              onPressed: () {
+                                cancelReservation(r);
+                              },
+                            ),
                           ),
                         )),
                     const SizedBox(height: 24),
                     Text(
-                      '❤️ 좋아요 내역 (${likes.length})',
+                      'LIKED LIST (${likes.length})',
                       style: const TextStyle(
                           fontSize: 18, fontWeight: FontWeight.bold),
                     ),
@@ -192,7 +262,7 @@ class _MasterScreenState extends State<MasterScreen> {
                     ),
                     const SizedBox(height: 24),
                     Text(
-                      '📊 카테고리별 좋아요 수',
+                      'LIKED REPORT',
                       style: const TextStyle(
                           fontSize: 18, fontWeight: FontWeight.bold),
                     ),
@@ -201,6 +271,43 @@ class _MasterScreenState extends State<MasterScreen> {
                           title: Text(e.key),
                           trailing: Text('${e.value}개'),
                         )),
+                    const SizedBox(height: 24),
+                    const Divider(),
+                    const Text(
+                      '예약 가능 시간 추가',
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: shopIdController,
+                      decoration: const InputDecoration(
+                        labelText: 'Shop ID',
+                        border: OutlineInputBorder(),
+                      ),
+                      keyboardType: TextInputType.number,
+                    ),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: timeController,
+                      decoration: const InputDecoration(
+                        labelText: 'Time',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: serviceController,
+                      decoration: const InputDecoration(
+                        labelText: 'Service',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    ElevatedButton(
+                      onPressed: addAvailableTime,
+                      child: const Text('추가하기'),
+                    ),
                   ],
                 ),
               ),

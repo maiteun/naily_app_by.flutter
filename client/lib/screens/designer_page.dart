@@ -11,7 +11,7 @@ class DesignerPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('$designerName의 작품들'),
+        title: Text('$designerName ARCHIVE'),
         centerTitle: true,
       ),
       body: FutureBuilder<List<Map<String, dynamic>>>(

@@ -89,6 +89,52 @@ def get_reservations():
         rows = [{'user': r[0], 'place': r[1], 'time': r[2], 'service': r[3]} for r in c.fetchall()]
     return jsonify(rows)
 
+
+@app.route('/reservations', methods=['DELETE'])
+def cancel_reservation():
+    data = request.json
+    user = data.get('user')
+    place = data.get('place')
+    time = data.get('time')
+    service = data.get('service')
+
+    if not all([user, place, time, service]):
+        return jsonify({'status': 'fail', 'message': 'Missing fields'}), 400
+
+    with sqlite3.connect(DB_FILE) as conn:
+        c = conn.cursor()
+        c.execute('''
+            DELETE FROM reservations
+            WHERE user=? AND place=? AND time=? AND service=?
+        ''', (user, place, time, service))
+        conn.commit()
+
+        if c.rowcount > 0:
+            return jsonify({'status': 'ok', 'message': 'Reservation cancelled'})
+        else:
+            return jsonify({'status': 'fail', 'message': 'No reservation found'}), 404
+
+
+@app.route('/available_times', methods=['POST'])
+def add_available_time():
+    data = request.json
+    shop_id = data.get('shop_id')
+    time = data.get('time')
+    service = data.get('service')
+
+    if not all([shop_id, time, service]):
+        return jsonify({'status': 'fail', 'message': 'Missing required fields'}), 400
+
+    with sqlite3.connect(DB_FILE) as conn:
+        c = conn.cursor()
+        c.execute('''
+            INSERT INTO available_times (shop_id, time, service)
+            VALUES (?, ?, ?)
+        ''', (shop_id, time, service))
+        conn.commit()
+
+    return jsonify({'status': 'ok', 'message': 'Available time added'})
+
 if __name__ == '__main__':
     init_db()  # 테이블만 만들고 데이터는 삽입하지 않음
     app.run(port=8080, debug=True)
