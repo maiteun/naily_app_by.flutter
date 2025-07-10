@@ -76,7 +76,7 @@ class _ReservationPageState extends State<ReservationPage> {
 
     if (res.statusCode == 200) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('예약이 완료되었습니다!')),
+        const SnackBar(content: Text('RESERVATION COMPLETED!')),
       );
       Navigator.pop(context);
     }
@@ -86,13 +86,13 @@ class _ReservationPageState extends State<ReservationPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('${widget.shopName} 예약'),
+        title: Text('${widget.shopName} Reservation'),
       ),
       body: Column(
         children: [
           const SizedBox(height: 16),
           const Text(
-            '예약 가능한 시간대',
+            'Available Time Slots',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
@@ -120,7 +120,7 @@ class _ReservationPageState extends State<ReservationPage> {
             padding: const EdgeInsets.all(16.0),
             child: ElevatedButton(
               onPressed: selectedTime != null ? confirmReservation : null,
-              child: const Text('예약하기'),
+              child: const Text('Reserve Now'),
             ),
           ),
         ],
