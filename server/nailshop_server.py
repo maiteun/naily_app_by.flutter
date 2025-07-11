@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 import sqlite3
 import requests
-
+from reminder import send_gmail
 SUPABASE_URL = 'https://vprspqajqjxcgdswawhh.supabase.co'
 SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZwcnNwcWFqcWp4Y2dkc3dhd2hoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE4NDczNDYsImV4cCI6MjA2NzQyMzM0Nn0.TO5qtptiYhr_DezGXap9IKi50M7U_nrGs_YL1fNg4gk'
 
@@ -172,6 +172,21 @@ def add_available_time():
         conn.commit()
 
     return jsonify({'status': 'ok', 'message': 'Available time added'})
+@app.route('/send_email', methods=['POST'])
+def send_email():
+    data = request.json
+    to = data.get('to')
+    subject = data.get('subject')
+    body = data.get('body')
+
+    if not all([to, subject, body]):
+        return jsonify({'status': 'fail', 'message': 'Missing fields'}), 400
+
+    try:
+        send_gmail(to, subject, body)
+        return jsonify({'status': 'ok', 'message': 'Email sent successfully'})
+    except Exception as e:
+        return jsonify({'status': 'fail', 'message': str(e)}), 500
 
 if __name__ == '__main__':
     init_db() 
