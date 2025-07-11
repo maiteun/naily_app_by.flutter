@@ -1,9 +1,8 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-/// Supabase 클라이언트
 final supabase = Supabase.instance.client;
 
-/// 📷 photos 테이블에서 사진 목록을 가져오기
+/// photos 테이블 연결
 Future<List<Map<String, dynamic>>> fetchPhotos() async {
   try {
     final List<dynamic> data = await supabase.from('photos').select();
@@ -15,7 +14,7 @@ Future<List<Map<String, dynamic>>> fetchPhotos() async {
   }
 }
 
-/// 📷 photos 테이블에 새 사진 추가
+/// 테이블에 사진 추가
 Future<void> insertPhoto({
   required String designer,
   required String imagePath,
@@ -33,7 +32,7 @@ Future<void> insertPhoto({
   }
 }
 
-/// 📷 특정 ID의 사진 삭제
+/// 사진 삭제
 Future<void> deletePhoto(String id) async {
   try {
     await supabase.from('photos').delete().eq('id', id);
@@ -43,7 +42,7 @@ Future<void> deletePhoto(String id) async {
   }
 }
 
-/// ❤️ 현재 로그인한 사용자가 좋아요한 photo_id 목록 가져오기
+///  현재 로그인한 사용자가 좋아요한 photo_id 목록 return
 Future<List<String>> fetchLikedPhotos() async {
   final userId = Supabase.instance.client.auth.currentUser?.id;
 
@@ -57,7 +56,7 @@ Future<List<String>> fetchLikedPhotos() async {
       .select('photo_id')
       .eq('user_id', userId);
 
-  print("[✅] fetchLikedPhotos: found ${response.length} liked photos");
+  print(" fetchLikedPhotos: found ${response.length} liked photos");
   return response.map<String>((e) => e['photo_id'] as String).toList();
 }
 
@@ -66,11 +65,11 @@ Future<void> insertLike(String photoId) async {
   final userId = Supabase.instance.client.auth.currentUser?.id;
 
   if (userId == null) {
-    print("[❌] 로그인된 유저가 없습니다.");
+    print("로그인된 유저가 없음");
     return;
   }
 
-  print("[❤️] Insert Like: userId=$userId, photoId=$photoId");
+  print(" Insert Like: userId=$userId, photoId=$photoId");
 
   await supabase.from('likes').insert({
     'user_id': userId,
@@ -83,10 +82,10 @@ Future<void> insertLike(String photoId) async {
 Future<void> deleteLike(String photoId) async {
   final userId = Supabase.instance.client.auth.currentUser?.id;
 
-  print("💔 deleteLike() 호출됨: userId=$userId, photoId=$photoId");
+  print("deleteLike() 호출됨: userId=$userId, photoId=$photoId");
 
   if (userId == null) {
-    print("[❌] 로그인된 유저가 없습니다. delete 취소");
+    print("로그인된 유저가 없습니다. delete 취소");
     return;
   }
 
@@ -95,9 +94,9 @@ Future<void> deleteLike(String photoId) async {
       .delete()
       .eq('user_id', userId)
       .eq('photo_id', photoId);
-    print("[✅] 좋아요 delete 성공");
+    print(" 좋아요 delete 성공");
   } catch (e) {
-    print("[❌] 좋아요 delete 실패: $e");
+    print(" 좋아요 delete 실패: $e");
   }
 }
 

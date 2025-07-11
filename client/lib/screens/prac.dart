@@ -15,6 +15,7 @@ class _MasterScreenState extends State<MasterScreen> {
   List<Map<String, dynamic>> reservations = [];
   List<Map<String, dynamic>> likes = [];
   Map<String, int> categoryCounts = {};
+  List<Map<String, dynamic>> shops = []; // 🌸 추가
 
   final TextEditingController shopIdController = TextEditingController();
   final TextEditingController timeController = TextEditingController();
@@ -27,6 +28,7 @@ class _MasterScreenState extends State<MasterScreen> {
   void initState() {
     super.initState();
     fetchData();
+    fetchShops(); // 🌸 추가
   }
 
   Future<void> fetchData() async {
@@ -38,15 +40,29 @@ class _MasterScreenState extends State<MasterScreen> {
     setState(() => isLoading = false);
   }
 
+  Future<void> fetchShops() async {
+    print("[REQ] GET /shops");
+    try {
+      final response =
+          await http.get(Uri.parse('http://127.0.0.1:8080/shops'));
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+        setState(() {
+          shops = data.map((e) => Map<String, dynamic>.from(e)).toList();
+        });
+      } else {
+        print("❌ Shop 조회 실패: ${response.statusCode}");
+      }
+    } catch (e) {
+      print("❌ Shop 조회 실패: $e");
+    }
+  }
+
   Future<void> fetchReservations() async {
-    print("[REQ] GET ");
-    ///reservations");
     try {
       final response =
           await http.get(Uri.parse('http://127.0.0.1:8080/reservations'));
-
-      print("[RES] ${response.statusCode} ");
-      //${response.body}");
 
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
@@ -71,8 +87,6 @@ class _MasterScreenState extends State<MasterScreen> {
   }
 
   Future<void> fetchLikes() async {
-    print("[REQ] GET");
-    // /generate-weekly-report-ts");
     try {
       final likesRes = await http.get(
         Uri.parse(
@@ -82,7 +96,6 @@ class _MasterScreenState extends State<MasterScreen> {
         },
       );
 
-      print("[RES] ${likesRes.statusCode} ${likesRes.body}");
       if (likesRes.statusCode != 200) return;
 
       final List<dynamic> likeData = json.decode(likesRes.body);
@@ -95,9 +108,6 @@ class _MasterScreenState extends State<MasterScreen> {
           'Authorization': 'Bearer $supabaseAnonKey',
         },
       );
-
-      print("[RES] photos ${photosRes.statusCode}");
-      // ${photosRes.body}");
 
       if (photosRes.statusCode != 200) return;
 
@@ -217,6 +227,22 @@ class _MasterScreenState extends State<MasterScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // 🌸 SHOP LIST
+                    Text(
+                      'SHOP LIST (${shops.length})',
+                      style: const TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    ...shops.map((shop) => Card(
+                          child: ListTile(
+                            title: Text('Shop: ${shop['name']}'),
+                            subtitle:
+                                Text('위치: ${shop['lat']}, ${shop['lng']}'),
+                          ),
+                        )),
+                    const SizedBox(height: 24),
+
                     Text(
                       'RESERVATION LIST (${reservations.length})',
                       style: const TextStyle(
@@ -260,7 +286,6 @@ class _MasterScreenState extends State<MasterScreen> {
                             .last
                             .replaceAll('.jpg', '')
                             .replaceAll('.png', '');
-                        
                         return SizedBox(
                           width: 120,
                           child: Column(
@@ -334,5 +359,3 @@ class _MasterScreenState extends State<MasterScreen> {
     );
   }
 }
-
-

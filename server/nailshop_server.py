@@ -1,5 +1,9 @@
 from flask import Flask, request, jsonify
 import sqlite3
+import requests
+
+SUPABASE_URL = 'https://vprspqajqjxcgdswawhh.supabase.co'
+SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZwcnNwcWFqcWp4Y2dkc3dhd2hoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE4NDczNDYsImV4cCI6MjA2NzQyMzM0Nn0.TO5qtptiYhr_DezGXap9IKi50M7U_nrGs_YL1fNg4gk'
 
 app = Flask(__name__)
 DB_FILE = 'nailshop.db'
@@ -35,22 +39,56 @@ def init_db():
             )
         ''')
         conn.commit()
-
+def supabase_login(email, password):
+    auth_endpoint = f'{SUPABASE_URL}/auth/v1/token?grant_type=password'
+    headers = {
+        'apikey': SUPABASE_API_KEY,
+        'Content-Type': 'application/json'
+    }
+    data = {
+        'email': email,
+        'password': password
+    }
+    response = requests.post(auth_endpoint, json=data, headers=headers)
+    return response.json()
 @app.route('/login', methods=['POST'])
 def login():
     data = request.json
-    user_id = data.get('id')
+    email = data.get('email')
     password = data.get('password')
 
-    with sqlite3.connect(DB_FILE) as conn:
-        c = conn.cursor()
-        c.execute('SELECT role FROM users WHERE username=? AND password=?', (user_id, password))
-        result = c.fetchone()
+    result = supabase_login(email, password)
 
-    if result:
-        return jsonify({'status': 'success', 'role': result[0]})
+    if 'access_token' in result:
+        return jsonify({'status': 'success', 'token': result['access_token']})
     else:
-        return jsonify({'status': 'fail', 'message': 'Invalid credentials'}), 401
+        return jsonify({'status': 'fail', 'message': result.get('error_description', 'Invalid credentials')}), 401
+def upload_photo(bucket, filename, file_content):
+    url = f'{SUPABASE_URL}/storage/v1/object/{bucket}/{filename}'
+    headers = {
+        'apikey': SUPABASE_API_KEY,
+        'Authorization': f'Bearer {SUPABASE_API_KEY}',
+        'Content-Type': 'image/jpeg'
+    }
+    response = requests.put(url, headers=headers, data=file_content)
+    return response.status_code == 200
+
+
+# @app.route('/login', methods=['POST'])
+# def login():
+#     data = request.json
+#     user_id = data.get('id')
+#     password = data.get('password')
+
+#     with sqlite3.connect(DB_FILE) as conn:
+#         c = conn.cursor()
+#         c.execute('SELECT role FROM users WHERE username=? AND password=?', (user_id, password))
+#         result = c.fetchone()
+
+#     if result:
+#         return jsonify({'status': 'success', 'role': result[0]})
+#     else:
+#         return jsonify({'status': 'fail', 'message': 'Invalid credentials'}), 401
 
 @app.route('/shops', methods=['GET'])
 def get_shops():
@@ -136,5 +174,5 @@ def add_available_time():
     return jsonify({'status': 'ok', 'message': 'Available time added'})
 
 if __name__ == '__main__':
-    init_db()  # 테이블만 만들고 데이터는 삽입하지 않음
+    init_db() 
     app.run(port=8080, debug=True)

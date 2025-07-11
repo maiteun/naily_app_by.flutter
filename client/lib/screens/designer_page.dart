@@ -28,7 +28,7 @@ class DesignerPage extends StatelessWidget {
               .toList();
 
           if (designerPhotos.isEmpty) {
-            return Center(child: Text('$designerName의 작품이 없습니다.'));
+            return Center(child: Text('EMPTY ARCHIVE\n$designerName'));
           }
 
           return GridView.builder(

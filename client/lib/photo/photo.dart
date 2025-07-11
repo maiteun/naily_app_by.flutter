@@ -1,7 +1,7 @@
 class Photo {
-  final String id;           // 고유 ID
-  final String author;       // @nailstudio
-  final String imageUrl;     // 실제 이미지 URL
+  final String id;
+  final String author;
+  final String imageUrl;
 
   Photo({required this.id, required this.author, required this.imageUrl});
 
