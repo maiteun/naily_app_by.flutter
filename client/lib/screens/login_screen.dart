@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'master_screen.dart';
 import 'user_screen.dart';
 
+
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
 
@@ -63,18 +64,18 @@ class _LoginScreenState extends State<LoginScreen> {
           );
         }
       } else {
-        print('[❌] 로그인 실패: 세션 없음');
+        print('로그인 실패: 세션 없음');
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('로그인 실패: 세션을 가져오지 못했습니다')),
         );
       }
     } on AuthException catch (e) {
-      print('[❌] AuthException: ${e.message}');
+      print('AuthException: ${e.message}');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('로그인 오류: ${e.message}')),
       );
     } catch (e) {
-      print('[⚠️] 기타 오류: $e');
+      print('기타 오류: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('기타 오류: $e')),
       );

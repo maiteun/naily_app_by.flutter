@@ -47,7 +47,7 @@ Future<List<String>> fetchLikedPhotos() async {
   final userId = Supabase.instance.client.auth.currentUser?.id;
 
   if (userId == null) {
-    print("[❌] fetchLikedPhotos: no logged-in user");
+    print(" fetchLikedPhotos: no logged-in user");
     return [];
   }
 
@@ -59,7 +59,6 @@ Future<List<String>> fetchLikedPhotos() async {
   print(" fetchLikedPhotos: found ${response.length} liked photos");
   return response.map<String>((e) => e['photo_id'] as String).toList();
 }
-
 
 Future<void> insertLike(String photoId) async {
   final userId = Supabase.instance.client.auth.currentUser?.id;
@@ -77,26 +76,14 @@ Future<void> insertLike(String photoId) async {
   });
 }
 
-
-
 Future<void> deleteLike(String photoId) async {
   final userId = Supabase.instance.client.auth.currentUser?.id;
 
-  print("deleteLike() 호출됨: userId=$userId, photoId=$photoId");
-
   if (userId == null) {
-    print("로그인된 유저가 없습니다. delete 취소");
+    print("로그인된 유저가 없음");
     return;
   }
 
-  try {
-    await supabase.from('likes')
-      .delete()
-      .eq('user_id', userId)
-      .eq('photo_id', photoId);
-    print(" 좋아요 delete 성공");
-  } catch (e) {
-    print(" 좋아요 delete 실패: $e");
-  }
+  await supabase.from('likes').delete().eq('user_id', userId).eq('photo_id', photoId);
 }
 

@@ -3,8 +3,8 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
 def send_gmail(to_email, subject, body):
-    gmail_user = 'yesje1@khu.ac.kr'  # 공주 Gmail
-    gmail_password = 'ffhxjimuobmtlmzh'  # 앱 비밀번호
+    gmail_user = 'yesje1@khu.ac.kr'  
+    gmail_password = 'ffhxjimuobmtlmzh'  
 
     msg = MIMEMultipart()
     msg['From'] = gmail_user
@@ -22,7 +22,7 @@ def send_gmail(to_email, subject, body):
         server.quit()
         print("✅ Email sent successfully.")
     except Exception as e:
-        print(f"❌ Failed to send email: {e}")
+        print(f"Failed to send email: {e}")
 
 if __name__ == "__main__":
     send_gmail(
